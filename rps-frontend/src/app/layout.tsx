@@ -20,11 +20,12 @@ export default function RootLayout({
         <QueryClientProvider client={queryClient}>
           <SuiClientProvider 
             networks={{
-              testnet: { 
-                url: 'https://fullnode.testnet.sui.io:443' // Added :443 port
+              devnet: { 
+                url: 'https://fullnode.devnet.sui.io:443'
               }
             }}
-            defaultNetwork="testnet"
+            defaultNetwork="devnet"
+            autoConnect={true}
           >
             <WalletProvider>
               {children}

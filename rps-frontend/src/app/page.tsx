@@ -3,8 +3,8 @@ import { ConnectButton, useCurrentAccount, useSuiClientQuery, useSignAndExecuteT
 import { Transaction } from '@mysten/sui/transactions'
 import { useState } from 'react'
 
-const PACKAGE_ID = "0x997e53c07355247d6debd7d11272d63428d564cc1c2cfe4674b0199047bf1672"
-const TREASURY_CAP_ID = "0x2c5b6c528561c0dd8f0512ef01a3f1b68b65a5cdc448d9b70a3b0485e43481b1"
+const PACKAGE_ID = "0xa8cef4c6922a112de65e68e086a1796b115419feeb8c97eaafde24296c0dcafd"
+const TREASURY_CAP_ID = "0x95b5afdc04c0154d0675714bc965d07490fef0fe4ecc0742ac05f4ae660186a4"
 
 export default function Home() {
   const account = useCurrentAccount()
@@ -44,8 +44,8 @@ export default function Home() {
     { enabled: !!account }
   )
 
-  // Get challenges owned by user - this is the fix!
-  const { data: userChallenges, refetch: refetchChallenges } = useSuiClientQuery(
+  // Get user's own challenges
+  const { data: userChallenges, refetch: refetchUserChallenges } = useSuiClientQuery(
     'getOwnedObjects',
     {
       owner: account?.address || '',
@@ -62,6 +62,75 @@ export default function Home() {
       enabled: !!account?.address
     }
   )
+
+  // For demo purposes, let's also try to get challenges from known addresses
+  // You can add more addresses here as needed
+  const knownAddresses = [
+    '0x4b7a68b6293f08efa401feefb329be3c73956efd2a09caf98d6cdc2d13b9feec', // First wallet
+    '0xd7a8dfef94eca3e56b54afff4116cd04f55b3be16b05d38106d2130e7d39774a'  // Second wallet
+  ]
+
+  // Get challenges from other known players
+  const { data: otherChallenges1 } = useSuiClientQuery(
+    'getOwnedObjects',
+    {
+      owner: knownAddresses[0],
+      filter: {
+        StructType: `${PACKAGE_ID}::rps_game::Challenge`
+      },
+      options: {
+        showContent: true,
+        showType: true,
+        showOwner: true
+      }
+    },
+    {
+      enabled: !!account?.address && account.address !== knownAddresses[0]
+    }
+  )
+
+  const { data: otherChallenges2 } = useSuiClientQuery(
+    'getOwnedObjects',
+    {
+      owner: knownAddresses[1],
+      filter: {
+        StructType: `${PACKAGE_ID}::rps_game::Challenge`
+      },
+      options: {
+        showContent: true,
+        showType: true,
+        showOwner: true
+      }
+    },
+    {
+      enabled: !!account?.address && account.address !== knownAddresses[1]
+    }
+  )
+
+  // Combine all challenges and remove duplicates
+const allChallengesData = [
+  ...(userChallenges?.data || []),
+  ...(otherChallenges1?.data || []),
+  ...(otherChallenges2?.data || [])
+]
+
+// Remove duplicate challenges by Object ID - more robust approach
+const seenIds = new Set()
+const uniqueChallenges = allChallengesData.filter((challenge) => {
+  const id = challenge?.data?.objectId
+  if (!id || seenIds.has(id)) {
+    return false
+  }
+  seenIds.add(id)
+  return true
+})
+
+const allChallenges = {
+  data: uniqueChallenges
+}
+  const refetchChallenges = () => {
+    refetchUserChallenges()
+  }
 
   const createChallenge = () => {
     if (!account || !stakeAmount) return
@@ -203,15 +272,16 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Your Challenges */}
+              {/* All Challenges (Global Lobby) */}
               <div className="bg-gray-800 p-6 rounded-lg">
-                <h3 className="text-xl font-semibold mb-4">🏟️ Your Challenges</h3>
-                {userChallenges && userChallenges.data && userChallenges.data.length > 0 ? (
+                <h3 className="text-xl font-semibold mb-4">🏟️ Available Challenges</h3>
+                {allChallenges && allChallenges.data && allChallenges.data.length > 0 ? (
                   <div className="space-y-3">
-                    {userChallenges.data.map((challenge: any, index: number) => {
+                    {allChallenges.data.map((challenge: any, index: number) => {
                       // Extract challenge data
                       const challengeData = challenge?.data?.content?.fields
                       const challengeId = challenge?.data?.objectId
+                      const challengeOwner = challenge?.data?.owner?.AddressOwner
                       
                       // Check if challenge has opponent
                       const hasOpponent = challengeData?.opponent && challengeData.opponent !== null
@@ -219,13 +289,22 @@ export default function Home() {
                       // Get stake amount
                       const stakeAmount = parseInt(challengeData?.stake?.fields?.balance || '0')
                       
+                      // Check if this is the current user's challenge
+                      const isMyChallenge = challengeOwner === account?.address
+                      
                       return (
                         <div 
-                          key={challengeId || `challenge-${index}`} 
+                          key={`${challengeOwner}-${challengeId}-${index}`}
                           className="bg-gray-700 p-4 rounded flex justify-between items-center"
                         >
                           <div>
-                            <p className="font-semibold">Challenge #{index + 1}</p>
+                            <p className="font-semibold">
+                              Challenge #{index + 1} 
+                              {isMyChallenge && <span className="text-blue-400"> (Your Challenge)</span>}
+                            </p>
+                            <p className="text-sm text-gray-300">
+                              Creator: {challengeOwner?.slice(0, 6)}...{challengeOwner?.slice(-4)}
+                            </p>
                             <p className="text-sm text-gray-300">
                               Object ID: {challengeId?.slice(0, 10)}...
                             </p>
@@ -240,12 +319,24 @@ export default function Home() {
                             </p>
                           </div>
                           <div className="flex gap-2">
-                            <button 
-                              className="bg-gray-600 px-4 py-2 rounded font-semibold cursor-not-allowed"
-                              disabled
-                            >
-                              📱 Your Challenge
-                            </button>
+                            {isMyChallenge ? (
+                              <button 
+                                className="bg-gray-600 px-4 py-2 rounded font-semibold cursor-not-allowed"
+                                disabled
+                              >
+                                📱 Your Challenge
+                              </button>
+                            ) : (
+                              !hasOpponent && (
+                                <button 
+                                  onClick={() => joinChallenge(challengeId, stakeAmount)}
+                                  disabled={joiningChallengeId === challengeId}
+                                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 px-4 py-2 rounded font-semibold transition-colors"
+                                >
+                                  {joiningChallengeId === challengeId ? '⏳ Joining...' : '⚔️ Join Challenge'}
+                                </button>
+                              )
+                            )}
                           </div>
                         </div>
                       )
@@ -253,8 +344,8 @@ export default function Home() {
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-gray-400 mb-4">No challenges created yet</p>
-                    <p className="text-sm text-gray-500">Create your first challenge below! 🎮</p>
+                    <p className="text-gray-400 mb-4">No challenges available</p>
+                    <p className="text-sm text-gray-500">Create the first challenge below! 🎮</p>
                   </div>
                 )}
               </div>

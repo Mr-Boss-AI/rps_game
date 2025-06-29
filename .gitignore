@@ -15,6 +15,9 @@ rps-frontend/out/
 .env.test.local
 .env.production.local
 
+# Sensitive deployment information
+DEPLOYMENT_INFO.md
+
 # IDE files
 .vscode/
 .idea/

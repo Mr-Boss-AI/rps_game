@@ -44,14 +44,14 @@ export default function Home() {
     { enabled: !!account }
   )
 
-  // Get ALL challenges by fetching known challenge objects
-  const { data: allChallenges, refetch: refetchChallenges } = useSuiClientQuery(
-    'multiGetObjects',
+  // Get challenges owned by user - this is the fix!
+  const { data: userChallenges, refetch: refetchChallenges } = useSuiClientQuery(
+    'getOwnedObjects',
     {
-      ids: [
-        '0x7339d5bea666f5b12c466fc9ee31133dcdcf8fab893a0bb807bd95b367ad15cc',
-        '0xb2f0f89f22a50913f118ca1e2176ba718000df6a4b5c81c85c60a91091b2bd84'
-      ],
+      owner: account?.address || '',
+      filter: {
+        StructType: `${PACKAGE_ID}::rps_game::Challenge`
+      },
       options: {
         showContent: true,
         showType: true,
@@ -90,7 +90,7 @@ export default function Home() {
           console.log('Challenge created!', result)
           setStakeAmount('')
           setIsCreating(false)
-          refetchChallenges() // Refresh the lobby
+          refetchChallenges() // Refresh the challenges
           alert('Challenge created successfully! 🎉')
         },
         onError: (error) => {
@@ -152,7 +152,7 @@ export default function Home() {
         onSuccess: (result) => {
           console.log('Joined challenge!', result)
           setJoiningChallengeId(null)
-          refetchChallenges() // Refresh the lobby
+          refetchChallenges() // Refresh the challenges
           alert('Challenge joined successfully! Game starting! 🎉⚔️')
         },
         onError: (error) => {
@@ -203,24 +203,20 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Global Challenge Lobby */}
+              {/* Your Challenges */}
               <div className="bg-gray-800 p-6 rounded-lg">
-                <h3 className="text-xl font-semibold mb-4">🏟️ Challenge Lobby</h3>
-                {allChallenges && allChallenges.length > 0 ? (
+                <h3 className="text-xl font-semibold mb-4">🏟️ Your Challenges</h3>
+                {userChallenges && userChallenges.data && userChallenges.data.length > 0 ? (
                   <div className="space-y-3">
-                    {allChallenges.map((challenge: any, index: number) => {
-                      // Extract challenge data with proper paths
+                    {userChallenges.data.map((challenge: any, index: number) => {
+                      // Extract challenge data
                       const challengeData = challenge?.data?.content?.fields
-                      const challengeOwner = challenge?.data?.owner?.AddressOwner
                       const challengeId = challenge?.data?.objectId
-                      
-                      // Check if this is user's challenge
-                      const isOwnChallenge = challengeOwner === account?.address
                       
                       // Check if challenge has opponent
                       const hasOpponent = challengeData?.opponent && challengeData.opponent !== null
                       
-                      // Get stake amount (convert from string to number)
+                      // Get stake amount
                       const stakeAmount = parseInt(challengeData?.stake?.fields?.balance || '0')
                       
                       return (
@@ -237,36 +233,19 @@ export default function Home() {
                               Stake: {(stakeAmount / 100).toFixed(2)} RPS
                             </p>
                             <p className="text-sm text-gray-300">
-                              Created by: {isOwnChallenge ? '🟡 You' : `👤 ${challengeOwner?.slice(0,6)}...${challengeOwner?.slice(-4)}`}
+                              Status: {hasOpponent ? '🔴 Battle Ready - Need to implement game!' : '🟢 Waiting for opponent'}
                             </p>
-                            <p className="text-sm text-gray-300">
-                              Status: {hasOpponent ? '🔴 In Progress' : '🟢 Waiting for opponent'}
+                            <p className="text-xs text-gray-400">
+                              Created: {new Date(parseInt(challengeData?.created_at || '0')).toLocaleString()}
                             </p>
                           </div>
                           <div className="flex gap-2">
-                            {isOwnChallenge ? (
-                              <button 
-                                className="bg-gray-600 px-4 py-2 rounded font-semibold cursor-not-allowed"
-                                disabled
-                              >
-                                📱 Your Challenge
-                              </button>
-                            ) : hasOpponent ? (
-                              <button 
-                                className="bg-purple-600 px-4 py-2 rounded font-semibold"
-                                disabled
-                              >
-                                👀 In Progress
-                              </button>
-                            ) : (
-                              <button 
-                                className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-semibold disabled:bg-gray-600"
-                                disabled={joiningChallengeId === challengeId || parseInt(balance?.totalBalance || '0') < stakeAmount}
-                                onClick={() => joinChallenge(challengeId, stakeAmount)}
-                              >
-                                {joiningChallengeId === challengeId ? '⏳ Joining...' : '⚔️ Join Battle'}
-                              </button>
-                            )}
+                            <button 
+                              className="bg-gray-600 px-4 py-2 rounded font-semibold cursor-not-allowed"
+                              disabled
+                            >
+                              📱 Your Challenge
+                            </button>
                           </div>
                         </div>
                       )
@@ -274,8 +253,8 @@ export default function Home() {
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-gray-400 mb-4">No challenges available in the lobby</p>
-                    <p className="text-sm text-gray-500">Create the first challenge and start battling! 🎮</p>
+                    <p className="text-gray-400 mb-4">No challenges created yet</p>
+                    <p className="text-sm text-gray-500">Create your first challenge below! 🎮</p>
                   </div>
                 )}
               </div>
@@ -306,7 +285,7 @@ export default function Home() {
                   </button>
                   {stakeAmount && parseFloat(stakeAmount) > 0 && (
                     <p className="text-sm text-gray-400 text-center">
-                      Challenge will be visible to all players in the lobby
+                      Challenge will await an opponent to join
                     </p>
                   )}
                 </div>

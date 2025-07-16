@@ -1,0 +1,1 @@
+al works on Linux all dependencies instaled no game logic just accept a chalange and automatic payouts

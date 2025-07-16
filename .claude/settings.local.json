@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sui client call --package 0x1fe936b9b03290e72a38f182eb1216af4686e6dba25e80cb43e147331804c6f3 --module rps_game --function mint_and_send --args 0x8e4fe5005bb0ef4de28ba76b87c96c6ade23663730631ffa1545e764ec761056 100000 0x4b7a68b6293f08efa401feefb329be3c73956efd2a09caf98d6cdc2d13b9feec --gas-budget 10000000)",
+      "Bash(sui client:*)",
+      "Bash(sui:*)",
+      "Bash(find:*)",
+      "Bash(sudo apt:*)",
+      "Bash(source:*)",
+      "Bash(rustc:*)",
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(cargo install:*)",
+      "Bash(mkdir:*)",
+      "Bash(wget:*)",
+      "Bash(pkill:*)",
+      "Bash(ls:*)",
+      "Bash(tar:*)",
+      "Bash(chmod:*)",
+      "Bash(export:*)",
+      "Bash(./sui:*)",
+      "Bash(echo:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:docs.sui.io)",
+      "Bash(touch:*)"
+    ],
+    "deny": []
+  }
+}

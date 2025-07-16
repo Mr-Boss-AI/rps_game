@@ -3,8 +3,7 @@ import { ConnectButton, useCurrentAccount, useSuiClientQuery, useSignAndExecuteT
 import { Transaction } from '@mysten/sui/transactions'
 import { useState, useEffect } from 'react'
 
-const PACKAGE_ID = "0x2d87063a9452573338e0545e86d6a0c4062bbe8fa606956f8315f3c56f1ba05d"
-const TREASURY_CAP_ID = "0xa1958abf65ec23cf3fe6a0298334173e788e9c30020d193aed6a0d236e932ab5"
+const PACKAGE_ID = "0x55596a95eecb8c091a62c8c378d6d27941ed39f1ac75799e490d602df4e1534c"
 
 export default function Home() {
   const account = useCurrentAccount()
@@ -86,7 +85,7 @@ export default function Home() {
   )
 
   // Extract challenge IDs from events
-  const challengeIds = challengeEvents?.data?.map((event: any) => event.parsedJson?.challenge_id).filter(Boolean) || []
+  const challengeIds = challengeEvents?.data?.map((event) => (event.parsedJson as { challenge_id?: string })?.challenge_id).filter(Boolean) as string[] || []
 
   // Manual refresh functions
   const refreshBalance = async () => {
@@ -171,7 +170,7 @@ export default function Home() {
         transaction: tx
       },
       {
-        onSuccess: (result: any) => {
+        onSuccess: (result: unknown) => {
           console.log('Challenge created!', result)
           
           setStakeAmount('')

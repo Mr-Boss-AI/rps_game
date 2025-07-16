@@ -25,7 +25,6 @@ export default function RootLayout({
               }
             }}
             defaultNetwork="devnet"
-            autoConnect={true}
           >
             <WalletProvider>
               {children}

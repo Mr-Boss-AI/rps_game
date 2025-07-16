@@ -22,7 +22,13 @@
       "Bash(echo:*)",
       "Bash(curl:*)",
       "WebFetch(domain:docs.sui.io)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(python:*)",
+      "Bash(pip install:*)",
+      "Bash(ss:*)",
+      "Bash(timeout 5 npm run dev)",
+      "Bash(rm:*)",
+      "Bash(PORT=3001 timeout 10 npm run dev:*)"
     ],
     "deny": []
   }

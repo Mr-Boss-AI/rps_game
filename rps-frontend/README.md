@@ -25,8 +25,8 @@ A complete Next.js frontend for the Rock Paper Scissors blockchain game with pro
 ### **Production Frontend Settings**
 ```typescript
 // Working Configuration (FINAL)
-const PACKAGE_ID = "0x1fe936b9b03290e72a38f182eb1216af4686e6dba25e80cb43e147331804c6f3";
-const TREASURY_CAP_ID = "0x8e4fe5005bb0ef4de28ba76b87c96c6ade23663730631ffa1545e764ec761056";
+const PACKAGE_ID = "0x55596a95eecb8c091a62c8c378d6d27941ed39f1ac75799e490d602df4e1534c";
+const TREASURY_CAP_ID = "0x9beb0ec1a6bbf1cef7493e657b4b1aa8f57a584fb59bf04766b7b193c0016fef";
 const RPS_TOKEN_TYPE = `${PACKAGE_ID}::rps_game::RPS_TOKEN`;
 ```
 
@@ -207,7 +207,7 @@ npm run start
 
 # Environment Variables (optional)
 NEXT_PUBLIC_NETWORK=testnet
-NEXT_PUBLIC_PACKAGE_ID=0x1fe936b9b03290e72a38f182eb1216af4686e6dba25e80cb43e147331804c6f3
+NEXT_PUBLIC_PACKAGE_ID=0x55596a95eecb8c091a62c8c378d6d27941ed39f1ac75799e490d602df4e1534c
 ```
 
 ### **Docker Deployment (Optional)**

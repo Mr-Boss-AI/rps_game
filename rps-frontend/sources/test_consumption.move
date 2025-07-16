@@ -4,7 +4,7 @@ module rps_game::test_consumption {
     use sui::tx_context::{TxContext, sender};
     
     // Use existing deployed RPS_TOKEN type  
-    use 0x10b2ded1f5831401f826fb25307f70f8176cc818703b028182411e0626b2941e::rps_token::RPS_TOKEN;
+    use 0x55596a95eecb8c091a62c8c378d6d27941ed39f1ac75799e490d602df4e1534c::rps_token::RPS_TOKEN;
 
     /// Simple test: consume a token and send it to sender (should fail showing consumption works)
     public entry fun consume_token_test(
